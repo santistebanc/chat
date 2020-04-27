@@ -1,36 +1,39 @@
-import * as React from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from "react";
+import { View, Dimensions } from "react-native";
+import Bugout from "bugout";
+import { GiftedChat } from "react-native-gifted-chat";
 
-const instructions = Platform.select({
-  ios: `Press Cmd+R to reload,\nCmd+D or shake for dev menu`,
-  android: `Double tap R on your keyboard to reload,\nShake or press menu button for dev menu`,
-});
+var b = Bugout("lalaland");
 
-export default function App() {
+const App = () => {
+  const [messages, setMessages] = useState([]);
+
+  const onReceive = (newMsg) => {
+    setMessages((messages) => [...messages, ...newMsg]);
+  };
+
+  useEffect(() => {
+    b.on("seen", function (address) {
+      console.log(address + " [ seen ]");
+    });
+
+    b.on("message", function (address, newMsg) {
+      onReceive(newMsg);
+    });
+  }, []);
+
+  const onSend = (newMsg) => {
+    b.send(newMsg);
+  };
+
+  const user = { _id: b.address(), name: b.address() };
+  const inverted = false;
+  const { width, height } = Dimensions.get("window");
   return (
-    <View style={styles.container}>
-      <Text style={styles.welcome}>Welcome to React Native!</Text>
-      <Text style={styles.instructions}>To get started, edit App.js</Text>
-      <Text style={styles.instructions}>{instructions}</Text>
+    <View style={{ width, height }}>
+      <GiftedChat {...{ messages, onSend, user, inverted }} />
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
+export default App;
